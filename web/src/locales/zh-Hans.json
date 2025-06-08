@@ -134,6 +134,7 @@
       "write-a-comment": "写评论"
     },
     "copy-link": "复制链接",
+    "share-as-image": "分享为图片",
     "count-memos-in-date": "{{date}} 有 {{count}} 条备忘录",
     "delete-confirm": "您确定要删除此条备忘录吗？（此操作不可逆）",
     "direction": "排序方式",
