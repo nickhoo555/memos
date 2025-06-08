@@ -7,6 +7,7 @@ import {
   BookmarkPlusIcon,
   CopyIcon,
   Edit3Icon,
+  ImageIcon,
   MoreVerticalIcon,
   TrashIcon,
   SquareCheckIcon,
@@ -22,6 +23,7 @@ import { NodeType } from "@/types/proto/api/v1/markdown_service";
 import { Memo } from "@/types/proto/api/v1/memo_service";
 import { cn } from "@/utils";
 import { useTranslate } from "@/utils/i18n";
+import showShareAsImageDialog from "./ShareAsImageDialog";
 
 interface Props {
   memo: Memo;
@@ -118,6 +120,10 @@ const MemoActionMenu = observer((props: Props) => {
     toast.success(t("message.succeed-copy-link"));
   };
 
+  const handleShareAsImage = () => {
+    showShareAsImageDialog(memo);
+  };
+
   const handleDeleteMemoClick = async () => {
     const confirmed = window.confirm(t("memo.delete-confirm"));
     if (confirmed) {
@@ -185,10 +191,16 @@ const MemoActionMenu = observer((props: Props) => {
           </>
         )}
         {!isArchived && (
-          <MenuItem onClick={handleCopyLink}>
-            <CopyIcon className="w-4 h-auto" />
-            {t("memo.copy-link")}
-          </MenuItem>
+          <>
+            <MenuItem onClick={handleCopyLink}>
+              <CopyIcon className="w-4 h-auto" />
+              {t("memo.copy-link")}
+            </MenuItem>
+            <MenuItem onClick={handleShareAsImage}>
+              <ImageIcon className="w-4 h-auto" />
+              分享为图片
+            </MenuItem>
+          </>
         )}
         {!readonly && (
           <>
