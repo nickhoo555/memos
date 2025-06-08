@@ -13,7 +13,7 @@ import { generateDialog } from "./Dialog";
 import UserAvatar from "./UserAvatar";
 
 const MIN_CARD_WIDTH = 400;
-const MAX_CARD_WIDTH = 600;
+const MAX_CARD_WIDTH = 900;
 const CARD_PADDING = 24;
 
 interface Props extends DialogProps {
@@ -59,7 +59,7 @@ const ShareAsImageDialog: React.FC<Props> = observer(({ destroy, memo }: Props) 
     }).format(date);
   };
 
-  // 处理memo内容，限制长度并去除复杂格式
+  // 处理memo内容，智能截断并去除复杂格式
   const formatMemoContent = (content: string) => {
     // 移除复杂的markdown语法，保留基本格式
     let formatted = content
@@ -72,10 +72,35 @@ const ShareAsImageDialog: React.FC<Props> = observer(({ destroy, memo }: Props) 
       .replace(/`([^`]+)`/g, "$1") // 移除行内代码标记
       .trim();
 
-    // 限制长度
-    const maxLength = 280;
+    // 智能长度限制 - 根据内容长度动态调整，支持最长8192字符
+    let maxLength: number;
+    if (formatted.length <= 1500) {
+      maxLength = formatted.length; // 短文完整显示
+    } else if (formatted.length <= 3000) {
+      maxLength = Math.min(2000, formatted.length); // 中长文适度截断
+    } else {
+      maxLength = Math.min(2500, formatted.length); // 长文保留核心内容
+    }
+    
     if (formatted.length > maxLength) {
-      formatted = formatted.substring(0, maxLength) + "...";
+      // 尝试在句号、感叹号或问号处截断
+      const sentences = formatted.substring(0, maxLength);
+      const lastSentenceEnd = Math.max(
+        sentences.lastIndexOf('。'),
+        sentences.lastIndexOf('！'),
+        sentences.lastIndexOf('？'),
+        sentences.lastIndexOf('.'),
+        sentences.lastIndexOf('!'),
+        sentences.lastIndexOf('?')
+      );
+      
+      if (lastSentenceEnd > maxLength * 0.7) {
+        // 如果找到合适的句子结尾且不会截断太多内容
+        formatted = sentences.substring(0, lastSentenceEnd + 1) + "...";
+      } else {
+        // 否则直接截断并添加省略号
+        formatted = sentences + "...";
+      }
     }
 
     return formatted;
@@ -145,7 +170,7 @@ const ShareAsImageDialog: React.FC<Props> = observer(({ destroy, memo }: Props) 
               ref={cardRef}
               className="rounded-3xl shadow-lg"
               style={{
-                width: `${Math.min(Math.max(formattedContent.length * 2 + 200, MIN_CARD_WIDTH), MAX_CARD_WIDTH)}px`,
+                width: `${Math.min(Math.max(Math.sqrt(formattedContent.length) * 25 + 350, MIN_CARD_WIDTH), MAX_CARD_WIDTH)}px`,
                 padding: `${CARD_PADDING * 1.5}px`,
                 background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
                 color: '#ffffff',
