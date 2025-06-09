@@ -1,5 +1,5 @@
 import { Button, IconButton } from "@mui/joy";
-import html2canvas from "html2canvas-pro";
+import { snapdom } from "@zumer/snapdom";
 import { Download, QrCode, X } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import QRCode from "qrcode";
@@ -111,32 +111,14 @@ const ShareAsImageDialog: React.FC<Props> = observer(({ destroy, memo }: Props) 
 
     setIsGenerating(true);
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 2, // 高质量输出
-        useCORS: true,
-        allowTaint: true,
-        width: cardRef.current.scrollWidth,
-        height: cardRef.current.scrollHeight,
-        ignoreElements: (element) => {
-          // 忽略可能有问题的元素
-          return element.tagName === 'IFRAME' || element.tagName === 'VIDEO';
-        },
-        onclone: (clonedDoc) => {
-          // 处理克隆文档中的样式问题
-          const clonedElement = clonedDoc.querySelector('[data-html2canvas-ignore]');
-          if (clonedElement) {
-            clonedElement.remove();
-          }
-        },
-      });
-
-      // 创建下载链接
-      const link = document.createElement("a");
+      // 使用 @zumer/snapdom 生成图片
       const timestamp = memo.displayTime ? new Date(memo.displayTime).getTime() : memo.createTime ? new Date(memo.createTime).getTime() : Date.now();
-      link.download = `memo-share-${timestamp}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      
+      await snapdom.download(cardRef.current, {
+        format: 'png',
+        filename: `memo-share-${timestamp}`,
+        backgroundColor: '#1e293b', // 设置背景色为卡片的背景色
+      });
 
       toast.success("图片已保存");
     } catch (error) {
